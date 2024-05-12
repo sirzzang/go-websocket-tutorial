@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/gorilla/websocket"
@@ -40,11 +40,13 @@ type WebSocketConnection struct {
 
 // WsJsonResponse defines the response sent back from websocket
 type WsJsonResponse struct {
-	Action      string `json:"action"`
-	Message     string `json:"message"`
-	MessageType string `json:"message_type"`
+	Action         string   `json:"action"`
+	Message        string   `json:"message"`
+	MessageType    string   `json:"message_type"`
+	ConnectedUsers []string `json:"connected_users"`
 }
 
+// WsJsonPayload defines the websocket request from the client
 type WsJsonPayload struct {
 	Action   string              `json:"action"`
 	Username string              `json:"username"`
@@ -54,10 +56,10 @@ type WsJsonPayload struct {
 
 // WsEndpoint upgrades connection to
 // 1. client connects to a home page
-// 2. server automatically call ws endpoint to connect
-// 3. once connected to ws endpoint, starts go routine to listen for websocket
+// 2. server automatically calls ws endpoint to connect
+// 3. once connected to ws endpoint, starts goroutine to listen for websocket
 // 4. whenever getting payload from websocket channel, stores them and broadcast to all
-// 5. if broadcast fails, which means losing client, close connection and remove client from map
+// 5. if broadcast fails, which means losing client, the server closes connection and removes client from map
 func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgradeConnection.Upgrade(w, r, nil)
 	if err != nil {
@@ -105,10 +107,28 @@ func ListenToWsChan() {
 	for {
 		e := <-wsChan
 
-		response.Action = "Got here"
-		response.Message = fmt.Sprintf("Some message, and action was %s", e.Action)
-		broadcastToAll(response)
+		switch e.Action {
+		case "username":
+			// get a list of all users and send it back via broadcast
+			clients[e.Conn] = e.Username
+			response.Action = "list_users"
+			response.ConnectedUsers = getUserList()
+			broadcastToAll(response)
+		}
+
+		// response.Action = "Got here"
+		// response.Message = fmt.Sprintf("Some message, and action was %s", e.Action)
+		// broadcastToAll(response)
 	}
+}
+
+func getUserList() []string {
+	users := []string{}
+	for _, v := range clients {
+		users = append(users, v)
+	}
+	sort.Strings(users)
+	return users
 }
 
 func broadcastToAll(response WsJsonResponse) {
