@@ -60,7 +60,7 @@
     let socket = null;
     
     document.addEventListener("DOMContentLoaded", function() {
-        socket = new WebSocket("ws://127.0.0.1:9090/ws");
+        socket = new WebSocket(`ws://${location.host}/ws`);
 
         socket.onopen = () => {
             console.log("Successfully connected");
