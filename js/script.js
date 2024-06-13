@@ -16,17 +16,25 @@ window.onbeforeunload = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     socket = new ReconnectingWebSocket(`ws://${location.host}/ws`, null, {debug: true, reconnectInterval: 3000});
+    
+    const offline = `<span class="badge bg-danger">Not connected</span>`
+    const online = `<span class="badge bg-success">Connected</span>`
+    
+    let statusDiv = document.getElementById("status");
 
     socket.onopen = () => {
         console.log("Successfully connected");
+        statusDiv.innerHTML = online;
     }
 
     socket.onclose = () => {
         console.log("Socket connection closed");
+        statusDiv.innerHTML = offline;
     }
 
     socket.onerror = (e) => {
         console.log(`Socket error: ${e.JSON.stringify()}`)
+        statusDiv.innerHTML = offline;
     }
 
     socket.onmessage = msg => {

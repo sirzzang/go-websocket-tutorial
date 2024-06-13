@@ -43,9 +43,12 @@
             <a href="javascript:void(0);" class="btn btn-secondary" id="sendBtn">Send Message</a>
 
             <input type="hidden" name="action" id="action">
+        
+            <div id="status" class="mt-2 float-end">
+
+            </div>
     
-            <hr>
-            <div id="output" class="chatbox">
+            <div id="output" class="chatbox mt-3">
             
             </div>
         </div>
