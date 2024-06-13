@@ -15,7 +15,7 @@ window.onbeforeunload = () => {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    socket = new WebSocket(`ws://${location.host}/ws`);
+    socket = new ReconnectingWebSocket(`ws://${location.host}/ws`, null, {debug: true, reconnectInterval: 3000});
 
     socket.onopen = () => {
         console.log("Successfully connected");
@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Socket connection closed");
     }
 
-    socket.onerror = e => {
-        console.log(`Socket error: %${e}`)
+    socket.onerror = (e) => {
+        console.log(`Socket error: ${e.JSON.stringify()}`)
     }
 
     socket.onmessage = msg => {

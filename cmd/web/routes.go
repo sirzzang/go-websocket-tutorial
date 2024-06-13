@@ -12,6 +12,8 @@ func routes() http.Handler {
 
 	fs := http.FileServer(http.Dir("./js"))
 	mux.Get("/js/", http.StripPrefix("/js/", fs))
+	// fs := http.FileServer(http.Dir("./js/"))
+	// mux.Get("/js/", http.StripPrefix("/js", fs))
 
 	mux.Get("/", http.HandlerFunc(handlers.Home))
 	mux.Get("/ws", http.HandlerFunc(handlers.WsEndpoint))
