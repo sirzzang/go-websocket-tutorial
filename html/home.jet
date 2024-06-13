@@ -58,6 +58,13 @@
     integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <script>
     let socket = null;
+
+    window.onbeforeunload = function() {
+        console.log("Leaving. Closing socket connection");
+        let jsonData = {};
+        jsonData["action"] = "left";
+        socket.send(JSON.stringify(jsonData));
+    }
     
     document.addEventListener("DOMContentLoaded", function() {
         socket = new WebSocket(`ws://${location.host}/ws`);

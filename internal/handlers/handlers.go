@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -114,15 +115,19 @@ func ListenToWsChan() {
 			response.Action = "list_users"
 			response.ConnectedUsers = getUserList()
 			broadcastToAll(response)
+		case "left":
+			log.Printf("client %v left", e.Username)
+			response.Action = "list_users"
+			delete(clients, e.Conn)
+			response.ConnectedUsers = getUserList()
+			broadcastToAll(response)
 		}
 
-		// response.Action = "Got here"
-		// response.Message = fmt.Sprintf("Some message, and action was %s", e.Action)
-		// broadcastToAll(response)
 	}
 }
 
 func getUserList() []string {
+	fmt.Printf("clients: %v\n", clients)
 	users := []string{}
 	for _, v := range clients {
 		users = append(users, v)
