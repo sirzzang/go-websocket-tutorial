@@ -39,7 +39,7 @@ type WebSocketConnection struct {
 	*websocket.Conn
 }
 
-// WsJsonResponse defines the response sent back from websocket
+// WsJsonResponse defines the response sent back to client from server via websocket
 type WsJsonResponse struct {
 	Action         string   `json:"action"`
 	Message        string   `json:"message"`
@@ -47,7 +47,7 @@ type WsJsonResponse struct {
 	ConnectedUsers []string `json:"connected_users"`
 }
 
-// WsJsonPayload defines the websocket request from the client
+// WsJsonPayload defines the websocket request sent from the client via websocket
 type WsJsonPayload struct {
 	Action   string              `json:"action"`
 	Username string              `json:"username"`
@@ -121,13 +121,15 @@ func ListenToWsChan() {
 			delete(clients, e.Conn)
 			response.ConnectedUsers = getUserList()
 			broadcastToAll(response)
+		case "broadcast":
+			response.Action = "broadcast"
+			response.Message = fmt.Sprintf("<strong>%s</strong>: %s", e.Username, e.Message)
+			broadcastToAll(response)
 		}
-
 	}
 }
 
 func getUserList() []string {
-	fmt.Printf("clients: %v\n", clients)
 	users := []string{}
 	for _, v := range clients {
 		users = append(users, v)
