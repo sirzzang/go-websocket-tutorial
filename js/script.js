@@ -1,15 +1,20 @@
 let socket = null;
 let o = document.getElementById("output");
+let userField = document.getElementById("username");
+let messageField = document.getElementById("message");
 
+const ACTION_LIST_USERS = "list_users";
+const ACTION_LEFT = "left";
+const ACTION_BROADCAST = "broadcast";
 
-window.onbeforeunload = function() {
+window.onbeforeunload = () => {
     console.log("Leaving. Closing socket connection");
     let jsonData = {};
-    jsonData["action"] = "left";
+    jsonData["action"] = ACTION_LEFT;
     socket.send(JSON.stringify(jsonData));
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", () => {
     socket = new WebSocket(`ws://${location.host}/ws`);
 
     socket.onopen = () => {
@@ -20,8 +25,8 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("Socket connection closed");
     }
 
-    socket.onerror = error => {
-        console.log("error")
+    socket.onerror = e => {
+        console.log(`Socket error: %${e}`)
     }
 
     socket.onmessage = msg => {
@@ -29,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("Action is: ", data.action);
 
         switch (data.action) {
-            case "list_users":
+            case ACTION_LIST_USERS:
                 let ul = document.getElementById("online_users");
                 while (ul.firstChild) ul.removeChild(ul.firstChild);
 
@@ -41,21 +46,20 @@ document.addEventListener("DOMContentLoaded", function() {
                     })
                 }
                 break;
-            case "broadcast":
+            case ACTION_BROADCAST:
                 o.innerHTML = o.innerHTML + data.message + "<br>";
                 break;
         }
     }
 
-    let userInput = document.getElementById("username");
-    userInput.addEventListener("change", function() {
+    userField.addEventListener("change", function() {
         let jsonData = {};
         jsonData["action"] = "username";
         jsonData["username"] = this.value;
         socket.send(JSON.stringify(jsonData));
     })
 
-    document.getElementById("message").addEventListener("keydown", function(e) {
+    messageField.addEventListener("keydown", e => {
         if (e.code === "Enter") {
             if (!socket) {
                 console.log("no socket connection");
@@ -72,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } 
     })
 
-    document.getElementById("sendBtn").addEventListener("click", function() {
+    document.getElementById("sendBtn").addEventListener("click", () => {
         if (!isValidChat()) {
             return false;
         }
@@ -82,10 +86,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 function isValidChat() {
-    let userField = document.getElementById("username");
-    let messageField = document.getElementById("message");
-
-
     if ((userField.value == "") || (messageField.value == "")) {
         alert("fill out user and message");
         return false;
@@ -95,10 +95,12 @@ function isValidChat() {
 
 function sendMessage() {
     let jsonData = {};
-    jsonData["action"] = "broadcast";
-    jsonData["username"] = document.getElementById("username").value;
-    jsonData["message"]  = document.getElementById("message").value;
+
+    jsonData["action"] = ACTION_BROADCAST;
+    jsonData["username"] = userField.value;
+    jsonData["message"]  = messageField.value;
+
     socket.send(JSON.stringify(jsonData));
 
-    document.getElementById("message").value = ""; // empty the message input field
+    messageField.value = ""; // empty the message input field
 }
