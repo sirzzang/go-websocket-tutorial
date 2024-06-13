@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function isValidChat() {
     if ((userField.value == "") || (messageField.value == "")) {
-        alert("fill out user and message");
+        errorMessage("Fill out user and message!");
         return false;
     } 
     return true;
@@ -103,4 +103,11 @@ function sendMessage() {
     socket.send(JSON.stringify(jsonData));
 
     messageField.value = ""; // empty the message input field
+}
+
+function errorMessage(msg) {
+    notie.alert({
+        type: 'error', 
+        text: msg,
+      })
 }
